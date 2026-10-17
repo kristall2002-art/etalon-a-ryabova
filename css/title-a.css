@@ -1,0 +1,12 @@
+/* Вариант A: слово «Нотариус» собирается из звёздной пыли (js/title-a.js).
+   Слово всегда лежит в разметке; пока идёт анимация — оно прозрачно, затем плавно проявляется. */
+html.js .hw{opacity:0;filter:blur(5px);transition:opacity .9s ease,filter .9s ease;animation:hwSafe .01s linear 6s forwards}
+html.js .hw.in{opacity:1;filter:none}
+@keyframes hwSafe{to{opacity:1;filter:none}}
+.sd-canvas{position:absolute;inset:0;width:100%;height:100%;z-index:3;pointer-events:none;transition:opacity .9s ease}
+.sd-canvas.out{opacity:0}
+@media (prefers-reduced-motion:reduce){
+  html.js .hw{opacity:1;filter:none;animation:none;transition:none}
+  .sd-canvas{display:none}
+}
+html[data-hc="1"] .hw{opacity:1!important;filter:none!important}
