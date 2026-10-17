@@ -3,7 +3,7 @@
    2) касание на телефоне: вспышка пятна и подпрыгивание;
    3) видео первого экрана ставится на паузу, когда экран ушёл;
    4) фоны экранов догружаются после загрузки страницы (первый экран не делит канал с картинками);
-   5) настройки языка/текста в мобильном меню — кнопки-«прокси» к настоящим кнопкам шапки.
+   5) размер текста, контраст и тема в мобильном меню — кнопки-«прокси» к настоящим кнопкам шапки.
    Без библиотек, без внешних запросов. */
 (function () {
   'use strict';
@@ -93,15 +93,21 @@
   if (document.readyState === 'complete') setTimeout(loadBgs, 400);
   else window.addEventListener('load', function () { setTimeout(loadBgs, 500); });
 
-  /* ---------- мобильное меню: язык и размер текста ---------- */
+  /* ---------- мобильное меню: размер текста, контраст и тема — кнопки-«прокси» к настоящим кнопкам шапки ---------- */
+  function syncProxy(b) {
+    var t = $(b.getAttribute('data-proxy'));
+    if (!t) return;
+    if (t.hasAttribute('aria-pressed')) b.setAttribute('aria-pressed', t.getAttribute('aria-pressed'));
+    b.disabled = !!t.disabled;
+  }
+  function syncProxies() { $$('[data-proxy]').forEach(syncProxy); }
   $$('[data-proxy]').forEach(function (b) {
     b.addEventListener('click', function () {
       var t = $(b.getAttribute('data-proxy'));
       if (!t) return;
       t.click();
-      if (t.hasAttribute('aria-pressed')) b.setAttribute('aria-pressed', t.getAttribute('aria-pressed'));
+      syncProxies();
     });
-    var t0 = $(b.getAttribute('data-proxy'));
-    if (t0 && t0.hasAttribute('aria-pressed')) b.setAttribute('aria-pressed', t0.getAttribute('aria-pressed'));
   });
+  syncProxies();
 })();

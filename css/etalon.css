@@ -189,9 +189,13 @@ body[data-sec="0"] .hdr{transform:translateY(-105%);opacity:0;visibility:hidden;
 .lang-dd{background:rgba(24,19,12,.92);-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);border:1px solid rgba(255,255,255,.22);color:#fff}
 .lang-dd a:hover,.lang-dd button:hover{background:rgba(255,255,255,.12)}
 .lang-dd a.cur{color:#ffe2a8}
-.lang-tools{display:flex;gap:6px;justify-content:space-between;margin-top:6px;padding-top:8px;border-top:1px solid rgba(255,255,255,.2)}
-.lang-dd .lang-tools .tool{width:44px;min-height:44px;padding:0;justify-content:center;border:1px solid rgba(255,255,255,.22)}
-.lang-dd .lang-tools .tool[aria-pressed="true"]{border-color:#ffe2a8;color:#ffe2a8}
+/* размер текста, контраст, тема: прямо на плашке, рядом с языком */
+.hdr-a11y{display:flex;align-items:center;gap:2px;margin-left:2px;padding-left:8px;border-left:1px solid rgba(255,255,255,.28)}
+.hdr-a11y .tool{width:44px;height:44px}
+.hdr #hcBtn[aria-pressed="true"]{background:rgba(255,226,168,.2);color:#ffe2a8;opacity:1}
+.hdr .tool:disabled{opacity:.35;cursor:default}
+.hdr .tool:disabled:hover{background:none}
+.mm-tools{display:none}
 
 .bar{
   background:var(--glass);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);border-top:0;box-shadow:none;
@@ -218,6 +222,12 @@ body[data-sec="0"] .bar{transform:translateY(105%);opacity:0;visibility:hidden;p
   border:1px solid rgba(255,255,255,.28);border-radius:10px;font-size:14px;font-weight:600}
 .mmenu .mm-row a.cur{color:#ffe2a8;border-color:#ffe2a8}
 .mmenu .mm-row .ico{width:20px;height:20px}
+/* на телефоне те же четыре кнопки одним заметным рядом в меню */
+.mmenu .mm-tools{grid-template-columns:repeat(4,1fr);gap:8px;padding:10px;border:1px solid rgba(255,226,168,.4);border-radius:14px;background:rgba(255,255,255,.07)}
+.mmenu .mm-tools button{display:inline-flex;width:100%;min-height:52px;justify-content:center;align-items:center;border:1px solid rgba(255,255,255,.28);border-radius:10px;font-size:16px;font-weight:700;background:rgba(0,0,0,.25);padding:0}
+.mmenu .mm-tools button .ico{width:22px;height:22px}
+.mmenu .mm-tools button[aria-pressed="true"]{border-color:#ffe2a8;color:#ffe2a8;background:rgba(255,226,168,.14)}
+.mmenu .mm-tools button:disabled{opacity:.4}
 
 /* ==========================================================================
    Экраны: карточки на стекле
@@ -291,6 +301,10 @@ body[data-sec="0"] .bar{transform:translateY(105%);opacity:0;visibility:hidden;p
   .hdr-tel span{display:none}
   .hdr-tel:hover{background:rgba(255,255,255,.14)}
 }
+@media (max-width:860px){
+  .hdr-a11y{display:none}
+  .mmenu .mm-tools{display:grid}
+}
 @media (max-width:1100px){
   .nav,.hdr-tel{display:none}
   .burger{display:grid}
@@ -356,6 +370,19 @@ body[data-sec="0"] .bar{transform:translateY(105%);opacity:0;visibility:hidden;p
   .hero-clouds{transition:none}
 }
 
+/* ==========================================================================
+   Тёмная тема (кнопка-луна на плашке). По умолчанию (data-theme="light") вид прежний;
+   тёмная — тот же дизайн, но глубже: фото экранов темнее, стекло плотнее, окна и формы тёмные.
+   Первый экран с видео и плашкой в обеих темах одинаковый.
+   ========================================================================== */
+html[data-theme="dark"]{--glass:rgba(0,0,0,.6)}
+html[data-theme="dark"] .sec-hero{--glass:rgba(0,0,0,.4)}
+html[data-theme="dark"] .sec-bg::after{background:rgba(0,0,0,.72)}
+html[data-theme="dark"] .hdr,html[data-theme="dark"] .bar{background:rgba(8,6,3,.78)}
+html[data-theme="dark"] .mmenu{background:rgba(10,8,5,.97)}
+html[data-theme="dark"] .mega,html[data-theme="dark"] .lang-dd{background:rgba(10,8,5,.96)}
+html[data-theme="dark"] .fld input,html[data-theme="dark"] .fld select,html[data-theme="dark"] .fld textarea{background:rgba(0,0,0,.5)}
+
 /* ---------- режим для слабовидящих: чистый чёрный экран без стекла ---------- */
 html[data-hc="1"] .sec:not(.sec-hero){background:#000}
 html[data-hc="1"] .sec-hero{background:#000}
@@ -364,7 +391,7 @@ html[data-hc="1"] .sec:not(.sec-hero) :is(.sec-head,.svc,.step,.rev,.rsum,.cred,
   background:#000!important;border:2px solid #fff!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important;box-shadow:none!important}
 html[data-hc="1"] .glass::after,html[data-hc="1"] .glow::before,html[data-hc="1"] .hdr::after,html[data-hc="1"] .bar::before,
 html[data-hc="1"] .sec:not(.sec-hero) :is(.sec-head,.svc,.step,.rev,.rsum,.cred,.cbox,.fq,.about-txt,.quote,.ilink,.chips li,.foot,.rate-chip)::after{display:none!important}
-html[data-hc="1"] .hero-clouds,html[data-hc="1"] .sd-canvas,html[data-hc="1"] .hero-video{display:none!important}
+html[data-hc="1"] .hero-clouds,html[data-hc="1"] .hero-gulls,html[data-hc="1"] .sd-canvas,html[data-hc="1"] .hero-video{display:none!important}
 html[data-hc="1"] .btn-glass.btn-book,html[data-hc="1"] .hdr .btn-primary,html[data-hc="1"] .sec:not(.sec-hero) .btn-primary{background:#ffe14d!important;color:#000!important}
 html[data-hc="1"] .hw,html[data-hc="1"] .hn{text-shadow:none}
 html[data-hc="1"] .btn-glass.btn-book *,html[data-hc="1"] .sec:not(.sec-hero) .btn-primary *{color:#000!important}

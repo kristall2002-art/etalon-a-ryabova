@@ -661,7 +661,7 @@ html[data-hc="1"] :focus-visible{outline:3px solid #ffe14d;outline-offset:2px}
     </ul>
     <div class="hdr-tools">
       <div class="lang-wrap">
-        <button class="tool tool-lang" id="langBtn" type="button" title="Язык и размер текста" aria-label="Язык и размер текста" aria-haspopup="listbox"><svg class="ico"><use href="#ico-globe"/></svg><span id="langCur">RU</span></button>
+        <button class="tool tool-lang" id="langBtn" type="button" data-i18n-title="lang_label" title="Язык" aria-label="Язык" aria-haspopup="listbox"><svg class="ico"><use href="#ico-globe"/></svg><span id="langCur">RU</span></button>
         <div class="lang-dd" role="listbox" aria-label="Языки сайта">
 <a href="./" data-lang="ru" role="option" hreflang="ru" lang="ru" class="cur" aria-current="page"><b>RU</b>Русский</a>
 <a href="en/" data-lang="en" role="option" hreflang="en" lang="en"><b>EN</b>English</a>
@@ -670,12 +670,13 @@ html[data-hc="1"] :focus-visible{outline:3px solid #ffe14d;outline-offset:2px}
 <a href="kg/" data-lang="kg" role="option" hreflang="ky" lang="ky"><b>KG</b>Кыргызча</a>
 <a href="az/" data-lang="az" role="option" hreflang="az" lang="az"><b>AZ</b>Azərbaycanca</a>
 <a href="zh/" data-lang="zh" role="option" hreflang="zh" lang="zh"><b>ZH</b>中文</a>
-          <div class="lang-tools" role="group" aria-label="Размер текста и контраст">
-            <button class="tool tool-a" id="fsDown" type="button" data-i18n-title="a11y_smaller" title="Мельче" aria-label="Мельче"><span>А−</span></button>
-            <button class="tool tool-a" id="fsUp" type="button" data-i18n-title="a11y_bigger" title="Крупнее" aria-label="Крупнее"><span>А+</span></button>
-            <button class="tool" id="hcBtn" type="button" data-i18n-title="a11y_contrast" title="Для слабовидящих" aria-label="Для слабовидящих" aria-pressed="false"><svg class="ico"><use href="#ico-eye"/></svg></button>
-          </div>
         </div>
+      </div>
+      <div class="hdr-a11y" role="group" aria-label="Размер текста, контраст и тема">
+        <button class="tool tool-a" id="fsDown" type="button" data-i18n-title="a11y_smaller" title="Мельче" aria-label="Мельче"><span>А−</span></button>
+        <button class="tool tool-a" id="fsUp" type="button" data-i18n-title="a11y_bigger" title="Крупнее" aria-label="Крупнее"><span>А+</span></button>
+        <button class="tool" id="hcBtn" type="button" data-i18n-title="a11y_contrast" title="Для слабовидящих" aria-label="Для слабовидящих" aria-pressed="false"><svg class="ico"><use href="#ico-eye"/></svg></button>
+        <button class="tool" id="themeBtn" type="button" data-i18n-title="theme_toggle" title="Тёмная / светлая тема" aria-label="Тёмная / светлая тема"><svg class="ico moon"><use href="#ico-moon"/></svg><svg class="ico sun"><use href="#ico-sun"/></svg></button>
       </div>
       <a class="btn btn-primary btn-sm hdr-book" href="#contacts" data-go="contacts" data-focus="#fName" data-i18n="nav_book">Записаться</a>
       <a class="hdr-tel" href="tel:+78127081917" aria-label="Позвонить +7 (812) 708-19-17"><svg class="ico"><use href="#ico-phone"/></svg><span>+7 (812) 708-19-17</span></a>
@@ -707,8 +708,8 @@ html[data-hc="1"] :focus-visible{outline:3px solid #ffe14d;outline-offset:2px}
   <a href="#faq" data-go="faq"><span data-i18n="nav_faq">Вопросы</span></a>
   <a href="#contacts" data-go="contacts"><span data-i18n="nav_contacts">Контакты</span></a>
   <div class="mm-set">
+    <div class="mm-tools" role="group" aria-label="Размер текста, контраст и тема"><button type="button" data-proxy="#fsDown" aria-label="Мельче"><span>А−</span></button><button type="button" data-proxy="#fsUp" aria-label="Крупнее"><span>А+</span></button><button type="button" data-proxy="#hcBtn" aria-label="Для слабовидящих"><svg class="ico"><use href="#ico-eye"/></svg></button><button type="button" data-proxy="#themeBtn" aria-label="Тёмная / светлая тема"><svg class="ico moon"><use href="#ico-moon"/></svg><svg class="ico sun"><use href="#ico-sun"/></svg></button></div>
     <div class="mm-row" role="group" aria-label="Язык сайта"><span class="mm-lbl">Язык</span><a href="./" class="cur" aria-current="page">RU</a><a href="en/" hreflang="en" lang="en">EN</a><a href="uz/" hreflang="uz" lang="uz">UZ</a><a href="tg/" hreflang="tg" lang="tg">TJ</a><a href="kg/" hreflang="ky" lang="ky">KG</a><a href="az/" hreflang="az" lang="az">AZ</a><a href="zh/" hreflang="zh" lang="zh">ZH</a></div>
-    <div class="mm-row" role="group" aria-label="Размер текста и контраст"><span class="mm-lbl">Текст</span><button type="button" data-proxy="#fsDown" aria-label="Мельче"><span>А−</span></button><button type="button" data-proxy="#fsUp" aria-label="Крупнее"><span>А+</span></button><button type="button" data-proxy="#hcBtn" aria-label="Для слабовидящих"><svg class="ico"><use href="#ico-eye"/></svg></button></div>
   </div>
   <div class="mmenu-foot">
     <a class="btn btn-primary" href="#contacts" data-go="contacts" data-focus="#fName" data-i18n="btn_book">Записаться на приём</a>
@@ -1047,11 +1048,11 @@ html[data-hc="1"] :focus-visible{outline:3px solid #ffe14d;outline-offset:2px}
 
   /* ---------- theme ---------- */
   function initTheme() {
-    var saved = store('nb_theme');
-    if (saved) html.setAttribute('data-theme', saved);
+    var saved = store('nb_theme_etalon');   /* свой ключ: на github.io другие демо пишут сюда nb_theme */
+    if (saved === 'light' || saved === 'dark') html.setAttribute('data-theme', saved);
     var b = $('#themeBtn'); if (b) b.addEventListener('click', function () {
       var next = html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
-      html.setAttribute('data-theme', next); store('nb_theme', next);
+      html.setAttribute('data-theme', next); store('nb_theme_etalon', next);
     });
   }
 
@@ -1589,6 +1590,7 @@ html[data-hc="1"] :focus-visible{outline:3px solid #ffe14d;outline-offset:2px}
 </script>
 <script src="js/etalon.js" defer></script>
 <script src="js/clouds.js" defer></script>
+<script src="js/gulls.js" defer></script>
 <script src="js/title-a.js" defer></script>
 </body>
 </html>
