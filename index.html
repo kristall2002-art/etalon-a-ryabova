@@ -1087,7 +1087,7 @@ html[data-hc="1"] :focus-visible{outline:3px solid #ffe14d;outline-offset:2px}
 
   /* ---------- full page scroller ---------- */
   var track = $('#track'), secs = track ? $$('.sec', track) : [];
-  var idx = 0, vh = window.innerHeight, lastFlip = 0, wheelBuf = [], lastInner = 0;
+  var idx = 0, vh = window.innerHeight, lastFlip = 0, lastFlipP = -1e9, lastInner = -1e9;
   function setVh() {
     vh = window.innerHeight; html.style.setProperty('--vh', vh + 'px');
     if (!track) return;
@@ -1106,7 +1106,7 @@ html[data-hc="1"] :focus-visible{outline:3px solid #ffe14d;outline-offset:2px}
     var id = secs[idx].id;
     $$('.dots button').forEach(function (d, k) { d.classList.toggle('cur', k === idx); });
     $$('[data-go]').forEach(function (a) { a.classList.toggle('cur', a.getAttribute('data-go') === id); });
-    if (changed) { lastFlip = Date.now(); try { history.replaceState(null, '', '#' + id); } catch (e) { } }
+    if (changed) { lastFlip = Date.now(); lastFlipP = performance.now(); try { history.replaceState(null, '', '#' + id); } catch (e) { } }
     closeMenus();
   }
   function goId(id) { var k = secs.findIndex(function (s) { return s.id === id; }); if (k >= 0) goTo(k); }
@@ -1116,43 +1116,76 @@ html[data-hc="1"] :focus-visible{outline:3px solid #ffe14d;outline-offset:2px}
     return el.scrollTop > 2;
   }
   function locked() { return body.classList.contains('modal-open') || body.classList.contains('menu-open'); }
-  function avg(a) { if (!a.length) return 0; var s = 0; for (var i = 0; i < a.length; i++) s += a[i]; return s / a.length; }
 
+  /* Колесо и тачпад. Один жест = один переход. Жест — это поток событий wheel без пауз дольше WHEEL_QUIET мс.
+     Пока идёт анимация перехода и пока поток не затих, новые события только продлевают блокировку: инерция
+     тачпада (десятки мелких событий подряд, иногда секунду и дольше) не листает дальше. Отдельный новый жест
+     распознаётся по паузе или по явному «разгону» дельты поверх затухающего хвоста. */
+  var WHEEL_QUIET = 180, WHEEL_THRESH = 36, wheelAcc = 0, wheelAt = -1e9, wheelHold = false, wheelTail = [];
+  function wheelDelta(e) {
+    var d = e.deltaY;
+    if (e.deltaMode === 1) d *= 33; else if (e.deltaMode === 2) d *= vh;   // строки (Firefox) и страницы → пиксели
+    return d;
+  }
   function onWheel(e) {
     if (locked()) return;
     var sc = e.target.closest ? e.target.closest('.sec-scroll') : null;
-    var d = e.deltaY;
-    if (Math.abs(e.deltaX) > Math.abs(d)) return;       // horizontal (review carousel)
-    if (sc && canScroll(sc, d)) { lastInner = Date.now(); return; }   // native inner scroll
+    var d = wheelDelta(e);
+    /* время берём у самого события: если страница на миг зависла, накопившиеся события не примут за новый жест */
+    var ts = (e.timeStamp && e.timeStamp < 1e11) ? e.timeStamp : performance.now();
+    if (Math.abs(e.deltaX) > Math.abs(e.deltaY)) return;                // horizontal (review carousel)
+    if (sc && canScroll(sc, d)) { lastInner = ts; return; }              // native inner scroll
     e.preventDefault();
-    var now = Date.now();
-    wheelBuf.push(Math.abs(d)); if (wheelBuf.length > 60) wheelBuf.shift();
-    if (now - lastFlip < 650) return;                    // cooldown after a flip
-    if (now - lastInner < 350) return;                   // just reached an inner edge – pause first
-    if (Math.abs(d) < 3) return;
-    var last = avg(wheelBuf.slice(-5)), prev = avg(wheelBuf.slice(-30, -5));
-    if (wheelBuf.length > 8 && last < prev * 0.95) return; // trackpad inertia decaying – ignore
-    goTo(idx + (d > 0 ? 1 : -1));
+    var gap = ts - wheelAt; wheelAt = ts;
+    var ad = Math.abs(d);
+    if (gap > WHEEL_QUIET || gap < 0) { wheelHold = false; wheelAcc = 0; wheelTail = []; }   // тишина: новый жест
+    wheelTail.push(ad); if (wheelTail.length > 6) wheelTail.shift();
+    if (ts - lastFlipP < 620) { wheelHold = true; wheelAcc = 0; return; }          // идёт анимация перехода
+    if (ts - lastInner < 350) { wheelAcc = 0; return; }                            // только что доехали до края внутри
+    if (wheelHold) {
+      /* тот же поток после перехода: пропускаем, пока не появится явный новый толчок */
+      var before = wheelTail.slice(0, -1), base = before.length ? Math.max.apply(null, before) : 0;
+      if (ad >= 60 && ad > base * 2.5) { wheelHold = false; wheelAcc = 0; } else return;
+    }
+    if (ad < 2) return;
+    wheelAcc += d;
+    if (Math.abs(wheelAcc) < WHEEL_THRESH) return;
+    var dir = wheelAcc > 0 ? 1 : -1;
+    wheelAcc = 0; wheelHold = true;
+    goTo(idx + dir);
   }
-  var tY = 0, tX = 0, tSc = null, tNative = false;
+
+  /* Касание. Короткий свайп (≥ 40 px или быстрый жест от 24 px) переключает экран сразу. Если внутри экрана своя
+     прокрутка — сначала она: свайп, который целиком ушёл на докрутку, экран не листает; свайп, у которого после
+     упора осталась «лишняя» длина, листает сразу, без второго свайпа. Пока палец ведёт — экран не двигается. */
+  var tY = 0, tX = 0, tT = 0, tOn = false, tSc = null, tScroll0 = 0, tNative = false;
+  function evTime(e) { return (e.timeStamp && e.timeStamp < 1e11) ? e.timeStamp : performance.now(); }
   function onTouchStart(e) {
-    var p = e.touches[0]; tY = p.clientY; tX = p.clientX; tNative = false;
+    if (e.touches.length !== 1) { tOn = false; return; }
+    var p = e.touches[0]; tY = p.clientY; tX = p.clientX; tT = evTime(e); tOn = true; tNative = false;
     tSc = e.target.closest ? e.target.closest('.sec-scroll') : null;
+    tScroll0 = tSc ? tSc.scrollTop : 0;
   }
   function onTouchMove(e) {
-    if (locked()) return;
+    if (locked() || !tOn) return;
     var p = e.touches[0]; var dy = tY - p.clientY, dx = tX - p.clientX;
-    if (Math.abs(dx) > Math.abs(dy)) return;             // horizontal gesture – let it be
-    if (tSc && canScroll(tSc, dy)) { tNative = true; return; }
-    if (tNative) return;
-    if (e.cancelable) e.preventDefault();
+    if (Math.abs(dx) > Math.abs(dy)) return;                             // horizontal gesture – let it be
+    if (tSc && canScroll(tSc, dy)) { tNative = true; return; }           // свой скролл внутри экрана ещё есть
+    if (e.cancelable) e.preventDefault();                                 // иначе страница стоит на месте
   }
   function onTouchEnd(e) {
-    if (locked() || tNative) return;
-    var p = e.changedTouches[0]; var dy = tY - p.clientY, dx = tX - p.clientX;
-    if (Math.abs(dy) < 45 || Math.abs(dx) > Math.abs(dy)) return;
-    if (Date.now() - lastFlip < 500) return;
-    goTo(idx + (dy > 0 ? 1 : -1));
+    if (locked() || !tOn) return;
+    var p = e.changedTouches[0]; var dy = tY - p.clientY, dx = tX - p.clientX, dt = Math.max(1, evTime(e) - tT);
+    tOn = false;
+    if (Math.abs(dx) > Math.abs(dy)) return;
+    var dir = dy > 0 ? 1 : -1;
+    var used = tSc ? Math.abs(tSc.scrollTop - tScroll0) : 0;             // сколько пальцу «съела» внутренняя прокрутка
+    var rest = Math.abs(dy) - used;                                       // длина свайпа сверх неё
+    if (tSc && canScroll(tSc, dir)) return;                               // внутри ещё есть что докручивать — листать рано
+    var fast = Math.abs(dy) / dt > 0.45;
+    if (!(rest >= 40 || (fast && rest >= 24))) return;
+    if (Date.now() - lastFlip < 450) return;
+    goTo(idx + dir);
   }
   function onKey(e) {
     if (locked()) { if (e.key === 'Escape') { closeModals(); closeMenus(); } return; }
